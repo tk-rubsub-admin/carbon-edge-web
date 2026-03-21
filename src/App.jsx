@@ -75,7 +75,7 @@ function App() {
           ),
         },
         {
-          path: '/checkout/:id',
+          path: 'checkout/:id',
           element: (
             <ProtectedRoute>
               <Checkout />
@@ -125,7 +125,9 @@ function App() {
         { path: '*', element: <NotFound /> },
       ],
     },
-  ]);
+  ],{
+    basename: '/app', 
+  });
   return (
     <AuthContextProvider>
       <CartContextProvider>

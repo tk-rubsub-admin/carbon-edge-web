@@ -27,9 +27,12 @@ export default function ProductItem({ product, isWished, handleWishlist }) {
         <Link to={`product/${product.id}`}>
           <img
             className="rounded-t-lg"
-            src={`/src/assets/product/${product.id}.png`}
+            src={`/app/images/product/${product.id}.png`}
             alt={product.nameTh}
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = '/app/images/no-image.jpg'
+            }}
           />
         </Link>
         <div className="px-5 pb-5">

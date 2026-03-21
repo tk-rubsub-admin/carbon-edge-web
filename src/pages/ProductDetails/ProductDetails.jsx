@@ -65,8 +65,13 @@ export default function ProductDetails() {
                         <img
                           className="w-full object-contain rounded-lg"
                           // src={img}
-                          src={`/src/assets/product/${ProdDetails.id}.png`}
-                          alt={`Product image`}
+
+                          src={`/app/images/product/${ProdDetails.id}.png`}
+                          alt={ProdDetails.nameTh}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src = '/app/images/no-image.jpg'
+                          }}
                         />
                       </div>
                     {/* ))
