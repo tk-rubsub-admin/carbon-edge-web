@@ -6,7 +6,8 @@ export default function Home() {
   return (
     <>
       <MainSlider />
-      <CategorySlider />
+      <br />
+      {/* <CategorySlider /> */}
       <Products />
     </>
   );

@@ -170,17 +170,6 @@ export default function Footer() {
             </div>
           </div>
           <hr className="h-px my-4 bg-gray-200 border-none dark:bg-gray-700" />
-          <div>
-            <div className="text-center text-gray-500 dark:text-gray-400">
-              &quot;It does not matter how slowly you go as long as you do not
-              stop.&quot; - <span className="italic text-md">Confucius</span>
-            </div>
-          </div>
-          <div>
-            <div className="text-center italic py-3 text-gray-500 dark:text-gray-400">
-              Made with love and passion by Mohamed Emary
-            </div>
-          </div>
         </div>
       </footer>
     </>

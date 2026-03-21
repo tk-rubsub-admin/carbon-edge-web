@@ -33,8 +33,9 @@ export default function Search() {
 
   return (
     <>
+      <br/><br/>
       <div className="container flex flex-wrap items-center">
-        <h3 className="text-3xl font-medium mb-5 w-full">Search Results:</h3>
+        <h3 className="text-3xl font-medium mb-5 w-full">ผลลัพธ์การค้นหา :</h3>
         {searchRes ? (
           searchRes.map((product) => (
             <ProductItem

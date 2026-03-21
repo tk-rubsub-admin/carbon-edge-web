@@ -1,16 +1,17 @@
 import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
-import Slider from 'react-slick/lib/slider.js';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { cartContext } from '../../context/Cart/Cart.jsx';
 import { productsContext } from '../../context/Products/Products.jsx';
 import { wishlistContext } from '../../context/Wishlist/Wishlist.jsx';
+import { formatCurrency } from '../../util/utils';
+import mockProducts from '../../data/mockProducts';
 
 export default function ProductDetails() {
   const { addProduct } = useContext(cartContext);
   const { renderStars } = useContext(productsContext);
-  const [ProdDetails, setProdDetails] = useState([]);
+  const [ProdDetails, setProdDetails] = useState(null);
 
   const settings = {
     dots: true,
@@ -27,40 +28,50 @@ export default function ProductDetails() {
 
   const { addToWishlist } = useContext(wishlistContext);
 
+  // useEffect(() => {
+  //   axios
+  //     .get(`https://ecommerce.routemisr.com/api/v1/products/${id}`)
+  //     .then((response) => {
+  //       setProdDetails(response.data.data);
+  //     })
+  //     .catch((error) => {
+  //       throw error;
+  //     });
+  // }, []);
+
   useEffect(() => {
-    axios
-      .get(`https://ecommerce.routemisr.com/api/v1/products/${id}`)
-      .then((response) => {
-        setProdDetails(response.data.data);
-      })
-      .catch((error) => {
-        throw error;
-      });
-  }, []);
+    const product = mockProducts.find((p) => p.id === id);
+    setProdDetails(product);
+  }, [id]);
+
+  // 🛑 กัน crash
+  if (!ProdDetails) return <div className="p-10">Loading...</div>;
 
   return (
     <>
+      <br/><br/>
       <Helmet>
-        <title>{ProdDetails.title}</title>
+        <title>{ProdDetails.nameTh}</title>
       </Helmet>
 
       <div className="container dark:bg-gray-800">
         <div className="flex flex-col md:flex-row md:space-x-8">
           <div className="w-full md:w-1/3 mb-8 md:mb-0">
             <div className="rounded-lg mb-7 dark:bg-gray-700">
-              <Slider {...settings}>
-                {ProdDetails.images
-                  ? ProdDetails.images.map((img, index) => (
-                      <div key={index} className="w-full h-[460px]">
+              {/* <Slider {...settings}> */}
+                {/* {ProdDetails.images
+                  ? ProdDetails.images.map((img, index) => ( */}
+                      <div className="w-full h-[460px]">
                         <img
-                          className="w-full h-full object-contain rounded-lg"
-                          src={img}
-                          alt={`Product image ${index + 1}`}
+                          className="w-full object-contain rounded-lg"
+                          // src={img}
+                          src={`/src/assets/product/${ProdDetails.id}.png`}
+                          alt={`Product image`}
                         />
                       </div>
-                    ))
-                  : ''}
-              </Slider>
+                    {/* ))
+                  : ''} */}
+              {/* </Slider> */}
             </div>
             <div className="flex mt-4 space-x-4">
               <button
@@ -79,7 +90,7 @@ export default function ProductDetails() {
 
           <div className="w-full md:w-2/3">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-10">
-              {ProdDetails.title}
+              {ProdDetails.nameTh}
             </h2>
 
             <span className="text-xl font-bold text-gray-700 dark:text-gray-300">
@@ -111,10 +122,23 @@ export default function ProductDetails() {
               </div>
 
               <div className="my-5 flex justify-between text-gray-900 dark:text-white">
-                <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
                   Price
                 </div>
-                <div className="text-xl font-bold">EGP {ProdDetails.price}</div>
+                <div className="text-xl font-bold">{formatCurrency(ProdDetails.price) + ' บาท'}</div>
+              </div>
+
+              <div className="my-5 flex justify-between text-gray-900 dark:text-white">
+                <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                  จังหวัด
+                </div>
+                <div className="text-xl font-bold">{ProdDetails.province}</div>
+              </div>
+              <div className="my-5 flex justify-between text-gray-900 dark:text-white">
+                <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                  อำเภอ
+                </div>
+                <div className="text-xl font-bold">{ProdDetails.amphure}</div>
               </div>
             </div>
           </div>
