@@ -70,7 +70,7 @@ export default function ProductDetails() {
                           alt={ProdDetails.nameTh}
                           loading="lazy"
                           onError={(e) => {
-                            e.currentTarget.src = '/app/images/no-image.jpg'
+                            e.currentTarget.src = '/app/no-image.jpg'
                           }}
                         />
                       </div>

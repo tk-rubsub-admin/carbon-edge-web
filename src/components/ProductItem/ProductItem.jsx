@@ -31,7 +31,7 @@ export default function ProductItem({ product, isWished, handleWishlist }) {
             alt={product.nameTh}
             loading="lazy"
             onError={(e) => {
-              e.currentTarget.src = '/app/images/no-image.jpg'
+              e.currentTarget.src = '/app/no-image.jpg'
             }}
           />
         </Link>
