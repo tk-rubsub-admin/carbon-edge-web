@@ -66,7 +66,7 @@ export default function ProductDetails() {
                           className="w-full object-contain rounded-lg"
                           // src={img}
 
-                          src={`/app/images/product/${ProdDetails.id}.png`}
+                          src={`/app/product/${ProdDetails.id}.png`}
                           alt={ProdDetails.nameTh}
                           loading="lazy"
                           onError={(e) => {
