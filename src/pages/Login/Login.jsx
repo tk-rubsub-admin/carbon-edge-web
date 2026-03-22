@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import axios from 'axios';
 import * as Yup from 'yup';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authContext } from '../../context/Auth/Auth';
 import { Helmet } from 'react-helmet';
@@ -57,9 +57,13 @@ export default function Login() {
     validationSchema: validate,
   });
 
+  useEffect(() => {
+    handleLogin(loginData)
+  }, [])
+
   return (
     <>
-      <Helmet>
+      {/* <Helmet>
         <title>Login</title>
       </Helmet>
 
@@ -151,7 +155,7 @@ export default function Login() {
             )}
           </div>
         </form>
-      </div>
+      </div> */}
     </>
   );
 }

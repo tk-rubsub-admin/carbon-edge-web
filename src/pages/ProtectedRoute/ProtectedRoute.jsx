@@ -4,7 +4,7 @@ import { useContext } from 'react';
 
 export default function ProtectedRoute(props) {
   const { userToken } = useContext(authContext);
-
+  
   if (userToken) {
     return props.children;
   } else {

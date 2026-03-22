@@ -6,24 +6,15 @@ import { initFlowbite } from 'flowbite';
 import { productsContext } from '../../context/Products/Products';
 
 export default function Navbar() {
-  const { userToken, setUserToken } = useContext(authContext);
+  const { userToken } = useContext(authContext);
   const location = useLocation();
   const navigate = useNavigate();
 
   const { data = [], setSearchRes } = useContext(productsContext);
 
-  // 🔥 filter state
   const [category, setCategory] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
   const [province, setProvince] = useState('');
 
-  function logout() {
-    setUserToken(null);
-    localStorage.removeItem('authToken');
-  }
-
-  // 🔍 search
   function handleSearch(e) {
     if (e.key === 'Enter') {
       const query = e.target.value.toLowerCase().trim();
@@ -38,7 +29,6 @@ export default function Navbar() {
     }
   }
 
-  // 🎯 filter
   function applyFilter() {
     let filtered = data;
 
@@ -48,14 +38,6 @@ export default function Navbar() {
 
     if (province) {
       filtered = filtered.filter((p) => p.province === province);
-    }
-
-    if (minPrice) {
-      filtered = filtered.filter((p) => p.price >= Number(minPrice));
-    }
-
-    if (maxPrice) {
-      filtered = filtered.filter((p) => p.price <= Number(maxPrice));
     }
 
     setSearchRes(filtered);
@@ -74,20 +56,52 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white shadow-md fixed top-0 w-full z-50">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-
+      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4 relative">
+        
         {/* LOGO */}
         <Link to="/" className="flex items-center space-x-3">
           <img src={logo} className="h-14" alt="Logo" />
         </Link>
 
+        {/* CENTER SECTION */}
+        {userToken && (
+          <div className="hidden lg:flex flex-col items-center absolute left-1/2 transform -translate-x-1/2">
+            {/* LABEL */}
+            <div className="mb-3 text-center whitespace-nowrap">
+              <h1 className="text-2xl font-extrabold tracking-[0.12em] uppercase bg-gradient-to-r from-green-700 via-emerald-600 to-lime-500 bg-clip-text text-transparent drop-shadow-sm">
+                Green Business Matching Platform
+              </h1>
+              <div className="w-24 h-1 bg-green-600 mx-auto rounded-full mt-2"></div>
+            </div>
+
+            {/* MENU */}
+            <ul className="flex flex-row space-x-8 font-medium">
+              <li>
+                <Link to="/" className={getLinkClass('/')}>
+                  Home
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/provinces" className={getLinkClass('/provinces')}>
+                  Provinces
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/categories" className={getLinkClass('/categories')}>
+                  Categories
+                </Link>
+              </li>
+            </ul>
+          </div>
+        )}
+
         {/* RIGHT SECTION */}
         <div className="flex lg:order-2 items-center gap-2">
-
           {userToken && (
             <div className="hidden lg:flex flex-col">
-
-              {/* 🔍 SEARCH */}
+              {/* SEARCH */}
               <input
                 type="text"
                 onKeyUp={handleSearch}
@@ -95,10 +109,8 @@ export default function Navbar() {
                 placeholder="Search..."
               />
 
-              {/* 🎯 FILTER */}
+              {/* FILTER */}
               <div className="flex gap-2">
-
-                {/* Category */}
                 <select
                   onChange={(e) => setCategory(e.target.value)}
                   className="border p-1 rounded"
@@ -109,7 +121,6 @@ export default function Navbar() {
                   <option value="งานคราฟต์">งานคราฟต์</option>
                 </select>
 
-                {/* Province */}
                 <select
                   onChange={(e) => setProvince(e.target.value)}
                   className="border p-1 rounded"
@@ -118,22 +129,6 @@ export default function Navbar() {
                   <option value="บึงกาฬ">บึงกาฬ</option>
                 </select>
 
-                {/* Price */}
-                <input
-                  type="number"
-                  placeholder="Min"
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="border p-1 w-20"
-                />
-
-                <input
-                  type="number"
-                  placeholder="Max"
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="border p-1 w-20"
-                />
-
-                {/* Button */}
                 <button
                   onClick={applyFilter}
                   className="bg-green-600 text-white px-3 rounded"
@@ -143,60 +138,6 @@ export default function Navbar() {
               </div>
             </div>
           )}
-
-        </div>
-
-        {/* MENU */}
-        <div className="hidden w-full lg:flex lg:w-auto lg:order-1">
-          <ul className="flex flex-col lg:flex-row lg:space-x-8 font-medium">
-
-            {userToken ? (
-              <>
-                <li>
-                  <Link to="/" className={getLinkClass('/')}>
-                    Home
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/brands" className={getLinkClass('/brands')}>
-                    Brands
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/categories" className={getLinkClass('/categories')}>
-                    Categories
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/login"
-                    onClick={logout}
-                    className={getLinkClass('/login')}
-                  >
-                    Logout
-                  </Link>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to="/login" className={getLinkClass('/login')}>
-                    Login
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/register" className={getLinkClass('/register')}>
-                    Register
-                  </Link>
-                </li>
-              </>
-            )}
-
-          </ul>
         </div>
       </div>
     </nav>

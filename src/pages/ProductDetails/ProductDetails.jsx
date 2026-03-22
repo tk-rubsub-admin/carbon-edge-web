@@ -12,6 +12,7 @@ export default function ProductDetails() {
   const { addProduct } = useContext(cartContext);
   const { renderStars } = useContext(productsContext);
   const [ProdDetails, setProdDetails] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const settings = {
     dots: true,
@@ -47,6 +48,8 @@ export default function ProductDetails() {
   // 🛑 กัน crash
   if (!ProdDetails) return <div className="p-10">Loading...</div>;
 
+  const imgSrc = `/app/product/${ProdDetails.id}.png`;
+
   return (
     <>
       <br/><br/>
@@ -61,16 +64,15 @@ export default function ProductDetails() {
               {/* <Slider {...settings}> */}
                 {/* {ProdDetails.images
                   ? ProdDetails.images.map((img, index) => ( */}
-                      <div className="w-full h-[460px]">
+                      <div className="w-full h-[460px] overflow-hidden">
                         <img
-                          className="w-full object-contain rounded-lg"
-                          // src={img}
-
-                          src={`/app/product/${ProdDetails.id}.png`}
+                          className="w-full object-contain rounded-lg cursor-pointer"
+                          src={imgSrc}
                           alt={ProdDetails.nameTh}
                           loading="lazy"
+                          onClick={() => setOpen(true)}
                           onError={(e) => {
-                            e.currentTarget.src = '/app/no-image.jpg'
+                            e.currentTarget.src = "/app/no-image.jpg";
                           }}
                         />
                       </div>
@@ -80,13 +82,13 @@ export default function ProductDetails() {
             </div>
             <div className="flex mt-4 space-x-4">
               <button
-                onClick={() => addProduct(ProdDetails.id)}
+                // onClick={() => addProduct(ProdDetails.id)}
                 className="w-1/2 bg-green-700 hover:bg-green-800 dark:bg-green-600 text-white py-2 px-4 rounded-lg font-bold dark:hover:bg-green-700"
               >
                 Add to cart
               </button>
               <button className="w-1/2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-gray-600"
-                onClick={() => addToWishlist(ProdDetails.id)}
+                // onClick={() => addToWishlist(ProdDetails.id)}
               >
                 Add to Wishlist
               </button>
@@ -135,20 +137,59 @@ export default function ProductDetails() {
 
               <div className="my-5 flex justify-between text-gray-900 dark:text-white">
                 <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                  GI
+                </div>
+                
+              </div>
+              <div className="my-5 flex justify-between text-gray-900 dark:text-white">
+                <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                  CFP
+                </div>
+              
+              </div>
+
+              <div className="my-5 flex justify-between text-gray-900 dark:text-white">
+                <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
                   จังหวัด
                 </div>
                 <div className="text-xl font-bold">{ProdDetails.province}</div>
               </div>
+
               <div className="my-5 flex justify-between text-gray-900 dark:text-white">
                 <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
                   อำเภอ
                 </div>
                 <div className="text-xl font-bold">{ProdDetails.amphure}</div>
               </div>
+
+              <div className="my-5 flex justify-between text-gray-900 dark:text-white">
+                <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                  ช่องทางติดต่อ
+                </div>
+                <div className="text-xl font-bold">{ProdDetails.contact}</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          onClick={() => setOpen(false)} // คลิกพื้นหลังปิด
+        >
+          <div className="max-w-4xl w-full px-4">
+            <img
+              className="w-full max-h-[80vh] object-contain rounded-lg shadow-lg"
+              src={imgSrc}
+              alt={ProdDetails.nameTh}
+              onClick={(e) => e.stopPropagation()} // กันปิดเมื่อคลิกรูป
+              onError={(e) => {
+                e.currentTarget.src = "/app/no-image.jpg";
+              }}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

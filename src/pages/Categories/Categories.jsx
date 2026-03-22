@@ -30,6 +30,7 @@ export default function Categories() {
 
   return (
     <>
+        <br/> <br/>
       <div className="container flex flex-wrap items-center">
         <h3 className="text-3xl font-medium mb-5 w-full">Our Categories</h3>
         {data ? (

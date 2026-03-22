@@ -22,6 +22,7 @@ import Wishlist from './pages/Wishlist/Wishlist';
 import Brands from './pages/Brands/Brands';
 import Categories from './pages/Categories/Categories';
 import ProductsContextProvider from './context/Products/Products';
+import Provinces from './pages/Provinces/Provinces';
 import Search from './pages/Search/Search';
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated/RedirectIfAuthenticated';
 
@@ -36,9 +37,9 @@ function App() {
         {
           index: true,
           element: (
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <Home />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           ),
         },
         {
@@ -103,6 +104,14 @@ function App() {
           element: (
             <ProtectedRoute>
               <Brands />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: 'provinces',
+          element: (
+            <ProtectedRoute>
+              <Provinces />
             </ProtectedRoute>
           ),
         },
