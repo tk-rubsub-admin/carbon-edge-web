@@ -3,8 +3,10 @@ import axios from 'axios';
 import Spinner from '../../components/Spinner/Spinner';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Categories() {
+  const { t } = useTranslation();
   // Queries
   const { data } = useQuery({
     queryKey: ['categories'],
@@ -30,9 +32,9 @@ export default function Categories() {
 
   return (
     <>
-        <br/> <br/>
+      <br/> <br/>
       <div className="container flex flex-wrap items-center">
-        <h3 className="text-3xl font-medium mb-5 w-full">Our Categories</h3>
+        <h3 className="text-3xl font-medium mb-5 w-full">{t('categories.title')}</h3>
         {data ? (
           data.map((category) => (
             <div

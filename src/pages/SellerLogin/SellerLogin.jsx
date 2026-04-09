@@ -7,7 +7,7 @@ import { authContext } from '../../context/Auth/Auth';
 import { Helmet } from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 
-export default function Login() {
+export default function SellerLogin() {
   const { t } = useTranslation();
   const [err, setErr] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,19 +19,18 @@ export default function Login() {
 
   function handleLogin(data) {
     setIsLoading(true);
-    const emailPrefix = data.email.split('@')[0] || 'User';
-    const savedDisplayName =
-      localStorage.getItem('userDisplayName') || emailPrefix;
+    const emailPrefix = data.email.split('@')[0] || 'Seller';
+    const sellerDisplayName = `Seller ${emailPrefix}`;
     // axios
     //   .post('https://ecommerce.routemisr.com/api/v1/auth/signin', data)
     //   .then((res) => {
-        setUserToken('1234');
-        setUserDisplayName(savedDisplayName);
-        localStorage.setItem('authToken', '1234');
-        localStorage.setItem('userDisplayName', savedDisplayName);
-        setErr(null);
-        setIsLoading(false);
-        navigate('/');
+    setUserToken('seller-1234');
+    setUserDisplayName(sellerDisplayName);
+    localStorage.setItem('authToken', 'seller-1234');
+    localStorage.setItem('userDisplayName', sellerDisplayName);
+    setErr(null);
+    setIsLoading(false);
+    navigate('/');
     //     setErr(null);
     //     setIsLoading(false);
     //     if (res.data.message === 'success') {
@@ -53,8 +52,8 @@ export default function Login() {
 
   const formik = useFormik({
     initialValues: {
-      email: 'demo@carbon-edge.com',
-      password: 'demo1234',
+      email: 'seller@carbon-edge.com',
+      password: 'seller1234',
     },
     onSubmit: handleLogin,
     validationSchema: validate,
@@ -63,14 +62,16 @@ export default function Login() {
   return (
     <>
       <Helmet>
-        <title>{t('auth.loginTitle')}</title>
+        <title>{t('auth.sellerLoginTitle')}</title>
       </Helmet>
 
       <section className="px-4 py-10 md:px-6">
         <div className="mx-auto max-w-md rounded-[2rem] bg-white px-6 py-8 shadow-[0_20px_70px_rgba(15,23,42,0.08)] ring-1 ring-gray-100 md:px-8">
-          <h1 className="text-2xl font-semibold text-gray-900">{t('auth.loginTitle')}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {t('auth.sellerLoginTitle')}
+          </h1>
           <p className="mt-2 text-sm text-gray-500">
-            {t('auth.loginSubtitle')}
+            {t('auth.sellerLoginSubtitle')}
           </p>
 
           {err && (
@@ -142,7 +143,7 @@ export default function Login() {
               disabled={isLoading}
               className="w-full rounded-2xl bg-green-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isLoading ? t('auth.loginLoading') : t('auth.loginButton')}
+              {isLoading ? t('auth.loginLoading') : t('auth.sellerLoginTitle')}
             </button>
           </form>
         </div>

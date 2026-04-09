@@ -2,21 +2,19 @@ import { useFormik } from 'formik';
 import axios from 'axios';
 import * as Yup from 'yup';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [err, setErr] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const buttonProps = {
-    type: 'submit',
-    className:
-      'text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800',
-  };
-
   const navigate = useNavigate();
+
+  const inputClassName =
+    'w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-600 focus:ring-4 focus:ring-green-100';
 
   function handleForgotPassword(data) {
     setIsLoading(true);
@@ -25,7 +23,7 @@ export default function ForgotPassword() {
       .post('https://ecommerce.routemisr.com/api/v1/auth/forgotPasswords', data)
       .then((res) => {
         setErr(null);
-        toast.success('An email has been sent to you!');
+        toast.success(t('auth.forgotPasswordSuccess'));
         setIsLoading(false);
         if (res.data.statusMsg === 'success') {
           localStorage.setItem('email', data.email);
@@ -34,15 +32,14 @@ export default function ForgotPassword() {
       })
       .catch((err) => {
         setIsLoading(false);
-        setErr(err.response.data.message);
-        throw err;
+        setErr(err.response?.data?.message || t('auth.forgotPasswordError'));
       });
   }
 
   const validate = Yup.object({
     email: Yup.string()
-      .required('Email is required')
-      .email('Email is not valid'),
+      .required(t('auth.validations.emailRequired'))
+      .email(t('auth.validations.emailInvalid')),
   });
 
   const formik = useFormik({
@@ -56,51 +53,72 @@ export default function ForgotPassword() {
   return (
     <>
       <Helmet>
-        <title>Fogot Password</title>
+        <title>{t('auth.forgotPasswordTitle')}</title>
       </Helmet>
 
-      <form
-        method="post"
-        className="max-w-md mx-auto"
-        onSubmit={formik.handleSubmit}
-      >
-        <h1 className="text-2xl text-gray-500 mb-5 font-bold">
-          Enter Your Email:
-        </h1>
-        {err && <div className="bg-red-300 py-1 mb-4 font-light">{err}</div>}
+      <section className="px-4 py-10 md:px-6">
+        <div className="mx-auto max-w-md rounded-[2rem] bg-white px-6 py-8 shadow-[0_20px_70px_rgba(15,23,42,0.08)] ring-1 ring-gray-100 md:px-8">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {t('auth.forgotPasswordTitle')}
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            {t('auth.forgotPasswordSubtitle')}
+          </p>
 
-        <div className="relative z-0 w-full mb-5 group">
-          <input
-            type="email"
-            name="email"
-            id="email"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.email}
-            className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-green-500 focus:outline-none focus:ring-0 focus:border-green-600 peer"
-            placeholder=" "
-          />
-          <label
-            htmlFor="email"
-            className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-green-600 peer-focus:dark:text-green-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-          >
-            Email address
-          </label>
-          {formik.errors.email && formik.touched.email && (
-            <span className="text-red-600 font-light text-sm">
-              {formik.errors.email}
-            </span>
+          {err && (
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {err}
+            </div>
           )}
-        </div>
 
-        {isLoading ? (
-          <button {...buttonProps} disabled>
-            <i className="fa-solid fa-spinner animate-spin"></i>
-          </button>
-        ) : (
-          <button {...buttonProps}>Reset Password</button>
-        )}
-      </form>
+          <form
+            method="post"
+            className="mt-8 space-y-5"
+            onSubmit={formik.handleSubmit}
+          >
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
+                {t('auth.email')}
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.email}
+                className={inputClassName}
+                placeholder={t('auth.emailPlaceholder')}
+              />
+              {formik.errors.email && formik.touched.email && (
+                <p className="mt-2 text-sm text-red-600">
+                  {formik.errors.email}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full rounded-2xl bg-green-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isLoading
+                ? t('auth.forgotPasswordLoading')
+                : t('auth.forgotPasswordButton')}
+            </button>
+          </form>
+
+          <Link
+            to="/login"
+            className="mt-6 block text-sm font-medium text-green-700 underline underline-offset-4"
+          >
+            {t('auth.loginLink')}
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

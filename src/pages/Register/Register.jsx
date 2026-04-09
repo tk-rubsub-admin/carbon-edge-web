@@ -1,229 +1,248 @@
 import { useFormik } from 'formik';
 import axios from 'axios';
 import * as Yup from 'yup';
-import { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authContext } from '../../context/Auth/Auth';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
+  const { t } = useTranslation();
   const [err, setErr] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { setUserToken } = useContext(authContext);
-
-  const buttonProps = {
-    type: 'submit',
-    className:
-      'sm:w-36 w-full text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 select-none',
-  };
-
   const navigate = useNavigate();
 
-  function handleRegister(data) {
+  const inputClassName =
+    'w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-600 focus:ring-4 focus:ring-green-100';
+
+  const validate = Yup.object({
+    firstName: Yup.string()
+      .trim()
+      .required(t('auth.validations.firstNameRequired'))
+      .min(2, t('auth.validations.firstNameMin')),
+    lastName: Yup.string()
+      .trim()
+      .required(t('auth.validations.lastNameRequired'))
+      .min(2, t('auth.validations.lastNameMin')),
+    email: Yup.string()
+      .trim()
+      .email(t('auth.validations.emailInvalid'))
+      .nullable(),
+    phoneNumber: Yup.string()
+      .required(t('auth.validations.phoneRequired'))
+      .matches(/^[0-9]{9,10}$/, t('auth.validations.phoneInvalid')),
+    password: Yup.string()
+      .required(t('auth.validations.passwordRequired'))
+      .min(8, t('auth.validations.passwordMin')),
+    repassword: Yup.string()
+      .required(t('auth.validations.repasswordRequired'))
+      .oneOf([Yup.ref('password')], t('auth.validations.repasswordMatch')),
+  });
+
+  function handleRegister(values) {
     setIsLoading(true);
+    setErr(null);
+
+    const payload = {
+      name: `${values.firstName.trim()} ${values.lastName.trim()}`.trim(),
+      email:
+        values.email?.trim() ||
+        `${values.phoneNumber.trim()}@placeholder.local`,
+      password: values.password,
+      rePassword: values.repassword,
+      phone: values.phoneNumber.trim(),
+    };
+
     axios
-      .post('https://ecommerce.routemisr.com/api/v1/auth/signup', data)
+      .post('https://ecommerce.routemisr.com/api/v1/auth/signup', payload)
       .then((res) => {
-        setErr(null);
-        toast.success('Account created successfully');
-        setUserToken(data.data.token);
-        localStorage.setItem('authToken', data.data.token);
         setIsLoading(false);
+        localStorage.setItem(
+          'userDisplayName',
+          `${values.firstName.trim()} ${values.lastName.trim()}`.trim()
+        );
+        toast.success(t('auth.registerSuccess'));
         if (res.data.message === 'success') {
           navigate('/login');
         }
       })
-      .catch((err) => {
-        toast.error('Please try again');
+      .catch((error) => {
         setIsLoading(false);
-        setErr(err.response.data.message);
+        setErr(error.response?.data?.message || t('auth.registerError'));
+        toast.error(t('auth.registerError'));
       });
   }
 
-  const validate = Yup.object({
-    name: Yup.string()
-      .required('Name is required')
-      .min(3, 'Name must be at least 3 characters'),
-
-    email: Yup.string()
-      .required('Email is required')
-      .email('Email is not valid'),
-
-    password: Yup.string()
-      .min(8, 'Password must be at least 8 characters long')
-      .matches(/[A-Za-z]/, 'Password must contain at least one letter')
-      .matches(/\d/, 'Password must contain at least one number')
-      .matches(
-        /[!@#$%^&*(),.?":{}|<>+\-_]/,
-        'Password must contain at least one special character'
-      )
-      .required('Password is required'),
-
-    rePassword: Yup.string()
-      .required('Confirm password is required')
-      .oneOf([Yup.ref('password')], 'Passwords do not match'),
-
-    phone: Yup.string()
-      .required('Phone number is required')
-      .matches(
-        /^01[0-2|5]{1}[0-9]{8}$/,
-        'Phone number is not valid (123-456-7890)'
-      ),
-  });
-
   const formik = useFormik({
     initialValues: {
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
+      phoneNumber: '',
       password: '',
-      rePassword: '',
-      phone: '',
+      repassword: '',
     },
-    onSubmit: handleRegister,
     validationSchema: validate,
+    onSubmit: handleRegister,
   });
+
+  const fields = [
+    {
+      name: 'firstName',
+      label: t('auth.firstName'),
+      type: 'text',
+      placeholder: t('auth.firstNamePlaceholder'),
+    },
+    {
+      name: 'lastName',
+      label: t('auth.lastName'),
+      type: 'text',
+      placeholder: t('auth.lastNamePlaceholder'),
+    },
+    {
+      name: 'email',
+      label: t('auth.emailOptional'),
+      type: 'email',
+      placeholder: t('auth.emailPlaceholder'),
+    },
+    {
+      name: 'phoneNumber',
+      label: t('auth.phoneNumber'),
+      type: 'tel',
+      placeholder: t('auth.phonePlaceholder'),
+    },
+    {
+      name: 'password',
+      label: t('auth.password'),
+      type: 'password',
+      placeholder: t('auth.passwordPlaceholder'),
+    },
+    {
+      name: 'repassword',
+      label: t('auth.repassword'),
+      type: 'password',
+      placeholder: t('auth.repasswordPlaceholder'),
+    },
+  ];
 
   return (
     <>
       <Helmet>
-        <title>Register</title>
+        <title>{t('auth.registerTitle')}</title>
       </Helmet>
 
-      <div className="container">
-        <form
-          method="post"
-          className="max-w-md mx-auto md:mt-12 mt-0"
-          onSubmit={formik.handleSubmit}
-        >
-          <h1 className="text-2xl text-gray-500 mb-5 font-bold">
-            Register Now
-          </h1>
-          {err && <div className="bg-red-300 py-1 mb-4 font-light">{err}</div>}
-          <div className="relative z-0 w-full mb-5 group">
-            <input
-              type="text"
-              name="name"
-              id="name"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.name}
-              className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-green-500 focus:outline-none focus:ring-0 focus:border-green-600 peer"
-              placeholder=" "
-            />
-            <label
-              htmlFor="name"
-              className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-green-600 peer-focus:dark:text-green-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              Name
-            </label>
-            {formik.errors.name && formik.touched.name && (
-              <span className="text-red-600 font-light text-sm">
-                {formik.errors.name}
-              </span>
-            )}
+      <section className="px-4 py-8 md:px-6">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-green-50 via-white to-lime-50 shadow-[0_24px_80px_rgba(22,101,52,0.12)] ring-1 ring-green-100">
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="bg-gradient-to-br from-green-800 via-green-700 to-emerald-600 px-8 py-12 text-white md:px-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-green-100">
+                Carbon Edge
+              </p>
+              <h1 className="mt-4 text-3xl font-bold leading-tight md:text-4xl">
+                {t('auth.registerHeroTitle')}
+              </h1>
+              <p className="mt-4 max-w-md text-sm leading-7 text-green-50/90">
+                {t('auth.registerHeroText')}
+              </p>
+              <div className="mt-10 space-y-4 text-sm text-green-50/95">
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-lime-300"></span>
+                  <p>{t('auth.registerFeature1')}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-lime-300"></span>
+                  <p>{t('auth.registerFeature2')}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-lime-300"></span>
+                  <p>{t('auth.registerFeature3')}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-10 md:px-10">
+              <div className="mx-auto max-w-xl">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  {t('auth.registerTitle')}
+                </h2>
+                <p className="mt-2 text-sm text-gray-500">
+                  {t('auth.registerSubtitle')}
+                </p>
+
+                {err && (
+                  <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {err}
+                  </div>
+                )}
+
+                <form
+                  method="post"
+                  className="mt-8 space-y-5"
+                  onSubmit={formik.handleSubmit}
+                >
+                  <div className="grid gap-5 md:grid-cols-2">
+                    {fields.map((field) => (
+                      <div
+                        key={field.name}
+                        className={
+                          field.name === 'email' ||
+                          field.name === 'phoneNumber' ||
+                          field.name === 'password' ||
+                          field.name === 'repassword'
+                            ? 'md:col-span-2'
+                            : ''
+                        }
+                      >
+                        <label
+                          htmlFor={field.name}
+                          className="mb-2 block text-sm font-medium text-gray-700"
+                        >
+                          {field.label}
+                        </label>
+                        <input
+                          id={field.name}
+                          name={field.name}
+                          type={field.type}
+                          placeholder={field.placeholder}
+                          value={formik.values[field.name]}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          className={inputClassName}
+                        />
+                        {formik.touched[field.name] &&
+                          formik.errors[field.name] && (
+                            <p className="mt-2 text-sm text-red-600">
+                              {formik.errors[field.name]}
+                            </p>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full rounded-2xl bg-green-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isLoading ? t('auth.registerLoading') : t('auth.registerButton')}
+                  </button>
+                </form>
+
+                <p className="mt-6 text-sm text-gray-600">
+                  {t('auth.hasAccount')}{' '}
+                  <Link
+                    to="/login"
+                    className="font-semibold text-green-700 underline underline-offset-4 transition hover:text-green-800"
+                  >
+                    {t('auth.loginLink')}
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="relative z-0 w-full mb-5 group">
-            <input
-              type="email"
-              name="email"
-              id="email"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.email}
-              className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-green-500 focus:outline-none focus:ring-0 focus:border-green-600 peer"
-              placeholder=" "
-            />
-            <label
-              htmlFor="email"
-              className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-green-600 peer-focus:dark:text-green-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              Email address
-            </label>
-            {formik.errors.email && formik.touched.email && (
-              <span className="text-red-600 font-light text-sm">
-                {formik.errors.email}
-              </span>
-            )}
-          </div>
-          <div className="relative z-0 w-full mb-5 group">
-            <input
-              type="password"
-              name="password"
-              id="password"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.password}
-              className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-green-500 focus:outline-none focus:ring-0 focus:border-green-600 peer"
-              placeholder=" "
-            />
-            <label
-              htmlFor="password"
-              className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-green-600 peer-focus:dark:text-green-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              Password
-            </label>
-            {formik.errors.password && formik.touched.password && (
-              <span className="text-red-600 font-light text-sm">
-                {formik.errors.password}
-              </span>
-            )}
-          </div>
-          <div className="relative z-0 w-full mb-5 group">
-            <input
-              type="password"
-              name="rePassword"
-              id="rePassword"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.rePassword}
-              className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-green-500 focus:outline-none focus:ring-0 focus:border-green-600 peer"
-              placeholder=" "
-            />
-            <label
-              htmlFor="rePassword"
-              className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-green-600 peer-focus:dark:text-green-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              Confirm password
-            </label>
-            {formik.errors.rePassword && formik.touched.rePassword && (
-              <span className="text-red-600 font-light text-sm">
-                {formik.errors.rePassword}
-              </span>
-            )}
-          </div>
-          <div className="relative z-0 w-full mb-5 group">
-            <input
-              type="tel"
-              name="phone"
-              id="phone"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.phone}
-              className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-green-500 focus:outline-none focus:ring-0 focus:border-green-600 peer"
-              placeholder=" "
-            />
-            <label
-              htmlFor="phone"
-              className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-green-600 peer-focus:dark:text-green-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              Phone number (123-456-7890)
-            </label>
-            {formik.errors.phone && formik.touched.phone && (
-              <span className="text-red-600 font-light text-sm">
-                {formik.errors.phone}
-              </span>
-            )}
-          </div>
-          {isLoading ? (
-            <button {...buttonProps} disabled>
-              <i className="fa-solid fa-spinner animate-spin"></i>
-            </button>
-          ) : (
-            <button {...buttonProps}>Register</button>
-          )}
-        </form>
-      </div>
+        </div>
+      </section>
     </>
   );
 }

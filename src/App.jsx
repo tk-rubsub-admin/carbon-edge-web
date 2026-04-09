@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
 import MainLayout from './pages/MainLayout/MainLayout';
 import Login from './pages/Login/Login';
+import SellerLogin from './pages/SellerLogin/SellerLogin';
 import Register from './pages/Register/Register';
 import NotFound from './pages/NotFound/NotFound';
 import AuthContextProvider from './context/Auth/Auth';
@@ -47,6 +48,14 @@ function App() {
           element: (
             <RedirectIfAuthenticated>
               <Login />
+            </RedirectIfAuthenticated>
+          ),
+        },
+        {
+          path: 'seller-login',
+          element: (
+            <RedirectIfAuthenticated>
+              <SellerLogin />
             </RedirectIfAuthenticated>
           ),
         },

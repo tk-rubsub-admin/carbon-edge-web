@@ -2,8 +2,10 @@ import { useContext, useEffect, useState } from 'react';
 import { cartContext } from '../../context/Cart/Cart';
 import { Link } from 'react-router-dom';
 import Spinner from '../../components/Spinner/Spinner';
+import { useTranslation } from 'react-i18next';
 
 export default function Cart() {
+  const { t } = useTranslation();
   const { getProducts, deleteProduct, updateProductQuantity } =
     useContext(cartContext);
 
@@ -38,16 +40,16 @@ export default function Cart() {
                 <span className="sr-only">Image</span>
               </th>
               <th scope="col" className="px-6 py-3">
-                Product
+                {t('cart.product')}
               </th>
               <th scope="col" className="px-6 py-3">
-                Qty
+                {t('cart.qty')}
               </th>
               <th scope="col" className="px-6 py-3">
-                Price
+                {t('cart.price')}
               </th>
               <th scope="col" className="px-6 py-3">
-                Action
+                {t('cart.action')}
               </th>
             </tr>
           </thead>
@@ -60,7 +62,7 @@ export default function Cart() {
                     className="text-center text-xl h-20 font-bold md:text-2xl lg:text-3xl"
                   >
                     <i className="fas fa-box-open me-3"></i>
-                    Wow, such empty!
+                    {t('cart.empty')}
                   </td>
                 </tr>
               ) : (
@@ -162,7 +164,7 @@ export default function Cart() {
                         onClick={() => handleDeleteProduct(product.product._id)}
                         className="font-medium text-red-600 dark:text-red-500 hover:underline"
                       >
-                        Remove
+                        {t('cart.remove')}
                       </button>
                     </td>
                   </tr>

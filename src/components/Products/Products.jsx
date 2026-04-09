@@ -3,9 +3,13 @@ import ProductItem from '../ProductItem/ProductItem';
 import Spinner from '../Spinner/Spinner';
 import { wishlistContext } from '../../context/Wishlist/Wishlist';
 import { productsContext } from '../../context/Products/Products';
+import { authContext } from '../../context/Auth/Auth';
+import { useTranslation } from 'react-i18next';
 
 export default function Products() {
+  const { t } = useTranslation();
   const { data } = useContext(productsContext);
+  const { userToken } = useContext(authContext);
 
   const { getWishlist, addToWishlist, deleteWishlistItem } =
     useContext(wishlistContext);
@@ -28,13 +32,28 @@ export default function Products() {
   }
 
   useEffect(() => {
-    main();
-  }, []);
+    if (!userToken) {
+      setWishlistIds([]);
+      return;
+    }
+
+    main().catch(() => {
+      setWishlistIds([]);
+    });
+  }, [userToken]);
 
   return (
     <>
+    <section className="container mb-12">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-green-700">
+            {t('products.title')}
+          </p>
+        </div>
+      </div>
+    </section>
       <div className="container flex flex-wrap items-center">
-        <h3 className="text-3xl font-medium mb-5 w-full">Our Products</h3>
         {data ? (
           data.map((product) => (
             <ProductItem
@@ -42,6 +61,7 @@ export default function Products() {
               isWished={wishlistIds?.indexOf(product._id) !== -1 ? true : false}
               key={product._id}
               handleWishlist={handleWishlist}
+              isGuest={!userToken}
             />
           ))
         ) : (
