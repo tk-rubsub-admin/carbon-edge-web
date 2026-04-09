@@ -11,14 +11,15 @@ export default function Home() {
   const loginData = { email: 'demo1@demo.com', password: '123456@demo' };
 
   function handleLogin(data) {
-    axios
-      .post('https://ecommerce.routemisr.com/api/v1/auth/signin', data)
-      .then((data) => {
-        setUserToken(data.data.token);
-        localStorage.setItem('authToken', data.data.token);
-      })
-      .catch((err) => {
-      });
+    // axios
+    //   .post('https://ecommerce.routemisr.com/api/v1/auth/signin', data)
+    //   .then((data) => {
+    //     setUserToken(data.data.token);
+    //     localStorage.setItem('authToken', data.data.token);
+    //   })
+    //   .catch((err) => {
+    //   });
+    localStorage.setItem('authToken', 'xxxxx');
   }
 
   if (userToken === null) {
