@@ -2,11 +2,12 @@ import axios from 'axios';
 import Spinner from '../../components/Spinner/Spinner';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { API_BASE_URL, withBasePath } from '../../config/runtime';
 
 export default function Categories() {
   const { t } = useTranslation();
-  const categoryApiUrl = 'http://localhost:8080/api/v1/categories';
-  const publicBasePath = '/app/product';
+  const categoryApiUrl = `${API_BASE_URL}/categories`;
+  const publicBasePath = withBasePath('/product');
   // Queries
   const { data } = useQuery({
     queryKey: ['categories'],
@@ -21,7 +22,7 @@ export default function Categories() {
           ...category,
           image: category.imageUrl
             ? `${publicBasePath}${category.imageUrl.startsWith('/') ? category.imageUrl : `/${category.imageUrl}`}`
-            : '/app/no-image.jpg',
+            : withBasePath('/no-image.jpg'),
         }))
       )
       .catch((error) => {

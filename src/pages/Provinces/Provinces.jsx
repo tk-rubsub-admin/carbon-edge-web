@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { productsContext } from '../../context/Products/Products';
 import mockProvinces from "../../data/mockProvinces";
+import { withBasePath } from '../../config/runtime';
 
 export default function Provinces() {
   const { data = [], setSearchRes } = useContext(productsContext);
@@ -105,11 +106,11 @@ export default function Provinces() {
                       
                       <img
                         className="rounded-lg mx-auto"
-                        src={`/app/province/${province.id}.jpg`}
+                        src={withBasePath(`/province/${province.id}.jpg`)}
                         alt={province.nameTh}
                         onClick={() => applyFilter(province.nameTh)}
                         onError={(e) => {
-                          e.currentTarget.src = "/app/no-image.jpg";
+                          e.currentTarget.src = withBasePath('/no-image.jpg');
                         }}
                       />
 

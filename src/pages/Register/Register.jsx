@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { API_BASE_URL } from '../../config/runtime';
 
 export default function Register() {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ export default function Register() {
     };
 
     axios
-      .post('http://localhost:8080/api/v1/customers', payload)
+      .post(`${API_BASE_URL}/customers`, payload)
       .then((res) => {
         setIsLoading(false);
         localStorage.setItem('userDisplayName', displayName);

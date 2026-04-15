@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productsContext } from '../../context/Products/Products';
+import { API_BASE_URL, withBasePath } from '../../config/runtime';
 
 export default function HomeCategories() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setSearchRes, searchProductsByCategory } = useContext(productsContext);
-  const categoryApiUrl = 'http://localhost:8080/api/v1/categories';
-  const publicBasePath = '/app/product';
+  const categoryApiUrl = `${API_BASE_URL}/categories`;
+  const publicBasePath = withBasePath('/product');
 
   const { data } = useQuery({
     queryKey: ['home-categories'],
@@ -26,7 +27,7 @@ export default function HomeCategories() {
           ...category,
           image: category.imageUrl
             ? `${publicBasePath}${category.imageUrl.startsWith('/') ? category.imageUrl : `/${category.imageUrl}`}`
-            : '/app/no-image.jpg',
+            : withBasePath('/no-image.jpg'),
         }))
       );
   }

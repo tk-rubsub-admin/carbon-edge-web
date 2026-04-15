@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authContext } from '../../context/Auth/Auth';
 import { Helmet } from 'react-helmet';
 import { useTranslation } from 'react-i18next';
+import { API_BASE_URL } from '../../config/runtime';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export default function Login() {
     setErr(null);
 
     try {
-      const res = await axios.post('http://localhost:8080/api/v1/auth/login', {
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, {
         email: data.email,
         password: data.password,
       });

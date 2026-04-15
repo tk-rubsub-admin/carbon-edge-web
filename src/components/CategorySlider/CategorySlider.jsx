@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import Slider from 'react-slick';
 import Spinner from '../Spinner/Spinner';
+import { API_BASE_URL, withBasePath } from '../../config/runtime';
 
 export default function CategorySlider() {
-  const categoryApiUrl = 'http://localhost:8080/api/v1/categories';
-  const publicBasePath = '/app/product';
+  const categoryApiUrl = `${API_BASE_URL}/categories`;
+  const publicBasePath = withBasePath('/product');
 
   const settings = {
     dots: true,
@@ -56,7 +57,7 @@ export default function CategorySlider() {
         ...category,
         image: category.imageUrl
           ? `${publicBasePath}${category.imageUrl.startsWith('/') ? category.imageUrl : `/${category.imageUrl}`}`
-          : '/app/no-image.jpg',
+          : withBasePath('/no-image.jpg'),
       }))
     );
   }

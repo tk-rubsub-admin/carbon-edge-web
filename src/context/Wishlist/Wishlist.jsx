@@ -3,13 +3,14 @@ import axios from 'axios';
 import { createContext, useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import { authContext } from '../Auth/Auth';
+import { API_BASE_URL } from '../../config/runtime';
 
 export const wishlistContext = createContext(null);
 
 export default function WishlistContextProvider({ children }) {
   const { userToken } = useContext(authContext);
 
-  const wishlistBaseUrl = 'http://localhost:8080/api/v1/wishlists';
+  const wishlistBaseUrl = `${API_BASE_URL}/wishlists`;
 
   function getHeaders() {
     const storedToken = String(localStorage.getItem('authToken') || userToken || '')

@@ -7,6 +7,7 @@ import { productsContext } from '../../context/Products/Products';
 import { formatCurrency } from '../../util/utils';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedProductName } from '../../util/localization';
+import { withBasePath } from '../../config/runtime';
 
 export default function ProductItem({
   product,
@@ -73,11 +74,11 @@ export default function ProductItem({
         <Link to={`/product/${product.id}`} onClick={handleProductClick}>
           <img
             className={`rounded-t-lg ${isGuest ? 'cursor-not-allowed opacity-95' : ''}`}
-            src={`/app/product/${product.id}.png`}
+            src={withBasePath(`/product/${product.id}.png`)}
             alt={productName}
             loading="lazy"
             onError={(e) => {
-              e.currentTarget.src = '/app/no-image.jpg';
+              e.currentTarget.src = withBasePath('/no-image.jpg');
             }}
           />
         </Link>

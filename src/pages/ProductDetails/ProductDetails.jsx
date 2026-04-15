@@ -12,6 +12,7 @@ import {
   getLocalizedProductDescription,
   getLocalizedProductName,
 } from '../../util/localization';
+import { withBasePath } from '../../config/runtime';
 
 export default function ProductDetails() {
   const { t, i18n } = useTranslation();
@@ -54,7 +55,7 @@ export default function ProductDetails() {
   // 🛑 กัน crash
   if (!ProdDetails) return <div className="p-10">{t('productDetail.loading')}</div>;
 
-  const imgSrc = `/app/product/${ProdDetails.id}.png`;
+  const imgSrc = withBasePath(`/product/${ProdDetails.id}.png`);
   const productName = getLocalizedProductName(ProdDetails, i18n.language);
   const productDescription = getLocalizedProductDescription(
     ProdDetails,
@@ -96,7 +97,7 @@ export default function ProductDetails() {
                     loading="lazy"
                     onClick={() => setOpen(true)}
                     onError={(e) => {
-                      e.currentTarget.src = "/app/no-image.jpg";
+                      e.currentTarget.src = withBasePath('/no-image.jpg');
                     }}
                   />
                 </div>
@@ -212,7 +213,7 @@ export default function ProductDetails() {
               alt={productName}
               onClick={(e) => e.stopPropagation()} // กันปิดเมื่อคลิกรูป
               onError={(e) => {
-                e.currentTarget.src = "/app/no-image.jpg";
+                e.currentTarget.src = withBasePath('/no-image.jpg');
               }}
             />
           </div>

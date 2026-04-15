@@ -3,12 +3,13 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
 import { authContext } from '../Auth/Auth';
+import { API_BASE_URL, withBasePath } from '../../config/runtime';
 
 export const cartContext = createContext(null);
 
 export default function CartContextProvider(props) {
   const { userToken } = useContext(authContext);
-  const cartApiBaseUrl = 'http://localhost:8080/api/v1/carts';
+  const cartApiBaseUrl = `${API_BASE_URL}/carts`;
   const [cartItemsCount, setCartItemsCount] = useState(0);
 
   function getHeaders() {
@@ -51,7 +52,7 @@ export default function CartContextProvider(props) {
         _id: productId,
         id: productId,
         title: item?.productName ?? '',
-        imageCover: `/app/product/${productId}.png`,
+        imageCover: withBasePath(`/product/${productId}.png`),
         sku: item?.sku ?? '',
       },
       count: quantity,

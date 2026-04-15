@@ -2,13 +2,14 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { createContext, useState } from 'react';
+import { API_BASE_URL } from '../../config/runtime';
 // import mockProducts from '../../data/mockProducts';
 
 export const productsContext = createContext(null);
 
 export default function ProductsContextProvider({ children }) {
-  const productsApiUrl = 'http://localhost:8080/api/v1/products?page=0&size=20';
-  const searchProductsApiUrl = 'http://localhost:8080/api/v1/products';
+  const productsApiUrl = `${API_BASE_URL}/products?page=0&size=20`;
+  const searchProductsApiUrl = `${API_BASE_URL}/products`;
 
   function renderStars(rating) {
     const stars = [];

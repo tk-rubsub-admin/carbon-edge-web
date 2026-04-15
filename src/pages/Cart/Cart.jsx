@@ -3,6 +3,7 @@ import { cartContext } from '../../context/Cart/Cart';
 import { Link } from 'react-router-dom';
 import Spinner from '../../components/Spinner/Spinner';
 import { useTranslation } from 'react-i18next';
+import { withBasePath } from '../../config/runtime';
 
 export default function Cart() {
   const { t } = useTranslation();
@@ -92,7 +93,7 @@ export default function Cart() {
                             className="w-16 md:w-32 max-w-full max-h-full rounded-lg"
                             alt={product.product.title}
                             onError={(e) => {
-                              e.currentTarget.src = '/app/no-image.jpg';
+                              e.currentTarget.src = withBasePath('/no-image.jpg');
                             }}
                           />
                         </Link>
