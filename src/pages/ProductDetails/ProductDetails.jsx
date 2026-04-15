@@ -118,20 +118,10 @@ export default function ProductDetails() {
 
             <div className="space-y-6">
               <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-green-100">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h2 className="mt-3 text-3xl font-bold leading-tight text-gray-900 md:text-4xl">
-                      {productName}
-                    </h2>
-                  </div>
-                  <div className="rounded-2xl bg-green-50 px-4 py-3 text-right ring-1 ring-green-100">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-green-700">
-                      {t('productDetail.price')}
-                    </div>
-                    <div className="mt-1 text-2xl font-bold text-gray-900">
-                      {formatCurrency(ProdDetails.price)} {t('products.baht')}
-                    </div>
-                  </div>
+                <div>
+                  <h2 className="text-3xl font-bold leading-tight text-gray-900 md:text-4xl">
+                    {productName}
+                  </h2>
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -149,6 +139,14 @@ export default function ProductDetails() {
                   </div>
                   <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm font-medium text-gray-600 ring-1 ring-gray-100">
                     {ProdDetails.category || '-'}
+                  </div>
+                  <div className="ml-auto rounded-2xl bg-green-50 px-4 py-3 text-right ring-1 ring-green-100">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-green-700">
+                      {t('productDetail.price')}
+                    </div>
+                    <div className="mt-1 text-lg font-bold text-gray-900">
+                      {formatCurrency(ProdDetails.price)} {t('products.baht')}
+                    </div>
                   </div>
                 </div>
               </div>

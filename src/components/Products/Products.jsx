@@ -11,23 +11,21 @@ export default function Products() {
   const { data } = useContext(productsContext);
   const { userToken } = useContext(authContext);
 
-  const { getWishlist, addToWishlist, deleteWishlistItem } =
+  const { getWishlist, addToWishlist, getWishlistProductId, normalizeId } =
     useContext(wishlistContext);
 
   const [wishlistIds, setWishlistIds] = useState(null);
 
   async function handleWishlist(id) {
-    if (wishlistIds?.indexOf(id) !== -1) {
-      await deleteWishlistItem(id);
-    } else {
-      await addToWishlist(id);
-    }
+    await addToWishlist(id);
     main();
   }
 
   async function main() {
     const wishlistItems = await getWishlist();
-    const ids = wishlistItems.map((item) => item._id);
+    const ids = wishlistItems
+      .map((item) => getWishlistProductId(item))
+      .filter(Boolean);
     setWishlistIds(ids);
   }
 
@@ -58,8 +56,8 @@ export default function Products() {
           data.map((product) => (
             <ProductItem
               product={product}
-              isWished={wishlistIds?.indexOf(product._id) !== -1 ? true : false}
-              key={product._id}
+              isWished={wishlistIds?.includes(normalizeId(product.id)) || false}
+              key={product.id}
               handleWishlist={handleWishlist}
               isGuest={!userToken}
             />

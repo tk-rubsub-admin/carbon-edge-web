@@ -11,37 +11,84 @@ export default function Login() {
   const { t } = useTranslation();
   const [err, setErr] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { setUserToken, setUserDisplayName } = useContext(authContext);
+  const { setUserToken, setUserDisplayName, setUserEmail, setUserRole } =
+    useContext(authContext);
   const navigate = useNavigate();
 
   const inputClassName =
     'w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-600 focus:ring-4 focus:ring-green-100';
 
-  function handleLogin(data) {
+  async function handleLogin(data) {
     setIsLoading(true);
-    const emailPrefix = data.email.split('@')[0] || 'User';
-    const savedDisplayName =
-      localStorage.getItem('userDisplayName') || emailPrefix;
-    // axios
-    //   .post('https://ecommerce.routemisr.com/api/v1/auth/signin', data)
-    //   .then((res) => {
-        setUserToken('1234');
-        setUserDisplayName(savedDisplayName);
-        localStorage.setItem('authToken', '1234');
-        localStorage.setItem('userDisplayName', savedDisplayName);
-        setErr(null);
-        setIsLoading(false);
-        navigate('/');
-    //     setErr(null);
-    //     setIsLoading(false);
-    //     if (res.data.message === 'success') {
-    //       navigate('/');
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     setIsLoading(false);
-    //     setErr(error.response?.data?.message || t('auth.loginError'));
-    //   });
+    setErr(null);
+
+    try {
+      const res = await axios.post('http://localhost:8080/api/v1/auth/login', {
+        email: data.email,
+        password: data.password,
+      });
+
+      const responseBody = res.data ?? {};
+      const responseData = responseBody?.data ?? {};
+      const customer = responseData?.customer ?? {};
+      const rawToken =
+        responseBody?.accessToken ??
+        responseBody?.token ??
+        responseData?.accessToken ??
+        responseData?.token;
+      const normalizedToken = String(rawToken ?? '')
+        .replace(/^Bearer\s+/i, '')
+        .trim();
+      const normalizedTokenType = String(responseBody?.tokenType || 'Bearer').trim();
+      const emailPrefix = data.email.split('@')[0] || 'User';
+      const displayName =
+        customer?.displayName ??
+        responseData?.displayName ??
+        responseData?.name ??
+        responseData?.user?.name ??
+        localStorage.getItem('userDisplayName') ??
+        emailPrefix;
+      const userEmail =
+        customer?.email ?? responseData?.email ?? responseData?.user?.email ?? data.email;
+      const userRole =
+        customer?.role ??
+        responseData?.role ??
+        responseData?.status ??
+        customer?.status ??
+        'general';
+
+      if (!normalizedToken) {
+        throw new Error('Missing token from login response');
+      }
+
+      setUserToken(normalizedToken);
+      setUserDisplayName(displayName);
+      setUserEmail(userEmail);
+      setUserRole(userRole);
+
+      localStorage.setItem('authToken', normalizedToken);
+      localStorage.setItem('authTokenType', normalizedTokenType || 'Bearer');
+      localStorage.setItem('authExpiresAt', responseBody?.expiresAt || '');
+      localStorage.setItem('userDisplayName', displayName);
+      localStorage.setItem('userEmail', userEmail);
+      localStorage.setItem('userRole', userRole);
+      localStorage.setItem('userId', responseData?.userId || '');
+      localStorage.setItem('customerId', responseData?.customerId || customer?.id || '');
+      localStorage.setItem('userStatus', responseData?.status || customer?.status || '');
+      localStorage.setItem('wishlistId', String(responseData?.wishlistId || ''));
+      localStorage.setItem('cartId', String(responseData?.cartId || ''));
+
+      navigate('/');
+    } catch (error) {
+      setErr(
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          t('auth.loginError')
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const validate = Yup.object({
@@ -53,8 +100,8 @@ export default function Login() {
 
   const formik = useFormik({
     initialValues: {
-      email: 'demo@carbon-edge.com',
-      password: 'demo1234',
+      email: '',
+      password: '',
     },
     onSubmit: handleLogin,
     validationSchema: validate,

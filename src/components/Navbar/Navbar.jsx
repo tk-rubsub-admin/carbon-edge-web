@@ -5,30 +5,56 @@ import { initFlowbite } from 'flowbite';
 import { productsContext } from '../../context/Products/Products';
 import { useTranslation } from 'react-i18next';
 import { authContext } from '../../context/Auth/Auth';
+import { cartContext } from '../../context/Cart/Cart';
 
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { data = [], setSearchRes } = useContext(productsContext);
-  const { userToken, userDisplayName, setUserToken, setUserDisplayName } =
-    useContext(authContext);
+  const { data = [], setSearchRes, searchProducts } = useContext(productsContext);
+  const { cartItemsCount } = useContext(cartContext);
+  const {
+    userToken,
+    userDisplayName,
+    setUserToken,
+    setUserDisplayName,
+    setUserEmail,
+    setUserRole,
+  } = useContext(authContext);
 
   const [category, setCategory] = useState('');
   const [province, setProvince] = useState('');
   const [language, setLanguage] = useState(i18n.language || 'th');
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  function handleSearch(e) {
+  function truncateDisplayName(name) {
+    const normalizedName = String(name || 'User');
+
+    if (normalizedName.length <= 10) {
+      return normalizedName;
+    }
+
+    return `${normalizedName.slice(0, 10)}...`;
+  }
+
+  async function handleSearch(e) {
     if (e.key === 'Enter') {
-      const query = e.target.value.toLowerCase().trim();
+      const query = e.target.value.trim();
 
-      const filteredProducts = data.filter((product) =>
-        product.nameTh?.toLowerCase().includes(query) ||
-        product.nameEn?.toLowerCase().includes(query)
-      );
+      if (!query) {
+        setSearchRes([]);
+        navigate('/search');
+        return;
+      }
 
-      setSearchRes(filteredProducts);
+      try {
+        const products = await searchProducts(query);
+        setSearchRes(products);
+      } catch {
+        setSearchRes([]);
+      }
       navigate('/search');
     }
   }
@@ -52,6 +78,10 @@ export default function Navbar() {
     initFlowbite();
   }, []);
 
+  useEffect(() => {
+    setIsAccountMenuOpen(false);
+  }, [location.pathname]);
+
   function handleLanguageChange(e) {
     const nextLanguage = e.target.value;
     setLanguage(nextLanguage);
@@ -59,12 +89,18 @@ export default function Navbar() {
     localStorage.setItem('appLanguage', nextLanguage);
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    setIsAccountMenuOpen(false);
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 400);
+    });
     setUserToken(null);
     setUserDisplayName('');
+    setUserEmail('');
+    setUserRole('guest');
     setSearchRes(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userDisplayName');
+    localStorage.clear();
     navigate('/');
   }
 
@@ -73,7 +109,9 @@ export default function Navbar() {
     '/seller-login',
     '/register',
     '/forgotPassword',
+    '/cart'
   ].includes(location.pathname);
+  const shortDisplayName = truncateDisplayName(userDisplayName);
 
   return (
     <nav className="bg-white shadow-md fixed top-0 w-full z-50">
@@ -116,33 +154,9 @@ export default function Navbar() {
               </label>
 
               {userToken ? (
-                <div className="flex min-h-[76px] flex-col justify-between rounded-2xl border border-green-100 bg-green-50/70 px-4 py-2 text-right">
-                  <span className="flex items-center justify-end gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-green-700">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      className="h-4 w-4"
-                      aria-hidden="true"
-                    >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    {t('navbar.account')}
-                  </span>
-                  <div className="mt-1 flex items-center justify-end gap-2 text-sm font-semibold text-gray-800">
-                    <span>
-                      {t('navbar.welcome')} {userDisplayName || 'User'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-green-700 transition hover:bg-green-100 hover:text-green-800"
-                      aria-label={t('navbar.logout')}
-                      title={t('navbar.logout')}
-                    >
+                <>
+                  <div className="flex min-h-[76px] flex-col justify-between rounded-2xl border border-gray-200 bg-white px-4 py-2 text-right">
+                    <span className="flex items-center justify-end gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -152,13 +166,132 @@ export default function Navbar() {
                         className="h-4 w-4"
                         aria-hidden="true"
                       >
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <path d="M10 17l5-5-5-5"></path>
-                        <path d="M15 12H3"></path>
+                        <circle cx="9" cy="20" r="1"></circle>
+                        <circle cx="17" cy="20" r="1"></circle>
+                        <path d="M3 4h2l2.2 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 7H7"></path>
                       </svg>
-                    </button>
+                      {t('navbar.cart')}
+                    </span>
+                    <div className="mt-1 flex justify-end">
+                      <Link
+                        to="/cart"
+                        className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-700 ring-1 ring-green-200 transition hover:bg-green-100 hover:text-green-800"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        >
+                          <circle cx="9" cy="20" r="1"></circle>
+                          <circle cx="17" cy="20" r="1"></circle>
+                          <path d="M3 4h2l2.2 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 7H7"></path>
+                        </svg>
+                        {/* <span>{t('navbar.cart')}</span> */}
+                        <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-green-700 px-1.5 py-0.5 text-xs font-bold text-white">
+                          {cartItemsCount}
+                        </span>
+                      </Link>
+                    </div>
                   </div>
-                </div>
+
+                  <div className="relative flex min-h-[76px] flex-col justify-between rounded-2xl border border-green-100 bg-green-50/70 px-4 py-2 text-right">
+                    <span className="flex items-center justify-end gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-green-700">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      {t('navbar.account')}
+                    </span>
+                    <div className="mt-1 flex items-center justify-end gap-2 text-sm font-semibold text-gray-800">
+                      <button
+                        type="button"
+                        onClick={() => setIsAccountMenuOpen((current) => !current)}
+                        disabled={isLoggingOut}
+                        className="inline-flex items-center gap-2 rounded-full px-2 py-1 text-gray-800 transition hover:bg-green-100 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label={t('navbar.accountMenu')}
+                        aria-expanded={isAccountMenuOpen}
+                      >
+                        <span className="max-w-[140px] truncate">
+                          {shortDisplayName}
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          className={`h-4 w-4 transition ${isAccountMenuOpen ? 'rotate-180' : ''}`}
+                          aria-hidden="true"
+                        >
+                          <path d="M6 9l6 6 6-6"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    {isAccountMenuOpen && (
+                      <div className="absolute right-0 top-[calc(100%+0.75rem)] z-50 min-w-[220px] overflow-hidden rounded-2xl border border-gray-200 bg-white py-2 text-left shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
+                        <Link
+                          to="/profile"
+                          className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                        >
+                          {t('navbar.myAccount')}
+                        </Link>
+                        <Link
+                          to="/cart"
+                          className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                        >
+                          {t('navbar.myPurchases')}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {isLoggingOut ? (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className="h-4 w-4 animate-spin"
+                                aria-hidden="true"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="9"
+                                  className="stroke-red-200"
+                                  strokeWidth="3"
+                                ></circle>
+                                <path
+                                  d="M21 12a9 9 0 0 0-9-9"
+                                  className="stroke-red-600"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                ></path>
+                              </svg>
+                              <span>{t('navbar.loggingOut')}</span>
+                            </>
+                          ) : (
+                            t('navbar.logout')
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="flex min-h-[76px] flex-col justify-between rounded-2xl border border-green-100 bg-green-50/70 px-4 py-2 text-right">

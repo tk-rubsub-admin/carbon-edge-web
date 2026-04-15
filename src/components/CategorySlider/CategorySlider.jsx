@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEffect } from 'react';
 import Slider from 'react-slick';
 import Spinner from '../Spinner/Spinner';
 
 export default function CategorySlider() {
+  const categoryApiUrl = 'http://localhost:8080/api/v1/categories';
+  const publicBasePath = '/app/product';
+
   const settings = {
     dots: true,
     infinite: true,
@@ -46,16 +48,18 @@ export default function CategorySlider() {
   const { data } = useQuery({
     queryKey: ['category'],
     queryFn: getCategories,
-    select: (data) => data.data.data,
   });
 
   function getCategories() {
-    return axios.get('https://ecommerce.routemisr.com/api/v1/categories');
+    return axios.get(categoryApiUrl).then((response) =>
+      (response.data?.data || []).map((category) => ({
+        ...category,
+        image: category.imageUrl
+          ? `${publicBasePath}${category.imageUrl.startsWith('/') ? category.imageUrl : `/${category.imageUrl}`}`
+          : '/app/no-image.jpg',
+      }))
+    );
   }
-
-  useEffect(() => {
-    getCategories();
-  }, []);
 
   return (
     <div className="container my-10">
@@ -65,7 +69,7 @@ export default function CategorySlider() {
           <Slider {...settings}>
             {data.map((category) => (
               <div
-                key={category._id}
+                key={category.id}
                 className="rounded-lg px-4 dark:bg-gray-800 dark:border-gray-700"
               >
                 <img

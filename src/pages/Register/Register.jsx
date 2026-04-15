@@ -27,10 +27,9 @@ export default function Register() {
       .min(2, t('auth.validations.lastNameMin')),
     email: Yup.string()
       .trim()
-      .email(t('auth.validations.emailInvalid'))
-      .nullable(),
+      .required(t('auth.validations.emailRequired'))
+      .email(t('auth.validations.emailInvalid')),
     phoneNumber: Yup.string()
-      .required(t('auth.validations.phoneRequired'))
       .matches(/^[0-9]{9,10}$/, t('auth.validations.phoneInvalid')),
     password: Yup.string()
       .required(t('auth.validations.passwordRequired'))
@@ -44,26 +43,25 @@ export default function Register() {
     setIsLoading(true);
     setErr(null);
 
+    const firstName = values.firstName.trim();
+    const lastName = values.lastName.trim();
+    const displayName = `${firstName} ${lastName}`.trim();
     const payload = {
-      name: `${values.firstName.trim()} ${values.lastName.trim()}`.trim(),
-      email:
-        values.email?.trim() ||
-        `${values.phoneNumber.trim()}@placeholder.local`,
+      email: values.email.trim(),
+      phoneNumber: values.phoneNumber.trim(),
       password: values.password,
-      rePassword: values.repassword,
-      phone: values.phoneNumber.trim(),
+      firstName,
+      lastName,
+      displayName,
     };
 
     axios
-      .post('https://ecommerce.routemisr.com/api/v1/auth/signup', payload)
+      .post('http://localhost:8080/api/v1/customers', payload)
       .then((res) => {
         setIsLoading(false);
-        localStorage.setItem(
-          'userDisplayName',
-          `${values.firstName.trim()} ${values.lastName.trim()}`.trim()
-        );
+        localStorage.setItem('userDisplayName', displayName);
         toast.success(t('auth.registerSuccess'));
-        if (res.data.message === 'success') {
+        if (res.status >= 200 && res.status < 300) {
           navigate('/login');
         }
       })
@@ -102,13 +100,13 @@ export default function Register() {
     },
     {
       name: 'email',
-      label: t('auth.emailOptional'),
+      label: t('auth.email'),
       type: 'email',
       placeholder: t('auth.emailPlaceholder'),
     },
     {
       name: 'phoneNumber',
-      label: t('auth.phoneNumber'),
+      label: t('auth.phoneNumberOptional'),
       type: 'tel',
       placeholder: t('auth.phonePlaceholder'),
     },

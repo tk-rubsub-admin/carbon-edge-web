@@ -14,7 +14,6 @@ import CartContextProvider from './context/Cart/Cart';
 import WishlistContextProvider from './context/Wishlist/Wishlist';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import VerifyCode from './pages/VerifyCode/VerifyCode';
@@ -26,6 +25,7 @@ import ProductsContextProvider from './context/Products/Products';
 import Provinces from './pages/Provinces/Provinces';
 import Search from './pages/Search/Search';
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated/RedirectIfAuthenticated';
+import Profile from './pages/Profile/Profile';
 
 function App() {
   const queryClient = new QueryClient();
@@ -134,9 +134,13 @@ function App() {
         },
         {
           path: 'search',
+          element: <Search />,
+        },
+        {
+          path: 'profile',
           element: (
             <ProtectedRoute>
-              <Search />
+              <Profile />
             </ProtectedRoute>
           ),
         },

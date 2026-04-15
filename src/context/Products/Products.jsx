@@ -1,10 +1,14 @@
+/* eslint-disable react/prop-types */
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { createContext, useState } from 'react';
-import mockProducts from '../../data/mockProducts';
+// import mockProducts from '../../data/mockProducts';
 
 export const productsContext = createContext(null);
 
-export default function ProductsContextProvider(props) {
+export default function ProductsContextProvider({ children }) {
+  const productsApiUrl = 'http://localhost:8080/api/v1/products?page=0&size=20';
+  const searchProductsApiUrl = 'http://localhost:8080/api/v1/products';
 
   function renderStars(rating) {
     const stars = [];
@@ -27,23 +31,103 @@ export default function ProductsContextProvider(props) {
 
   const [searchRes, setSearchRes] = useState(null);
 
-  // ✅ ใช้ react-query แต่ดึง mock
+  function normalizeProduct(product) {
+    return {
+      ...product,
+      id: String(product?.id ?? product?.productId ?? ''),
+      nameTh: product?.nameTh ?? product?.name ?? '',
+      nameEn: product?.nameEn ?? product?.name ?? '',
+      province: product?.province ?? '',
+      amphure: product?.amphure ?? product?.district ?? '',
+      price: Number(product?.price ?? 0),
+      category: product?.categoryName ?? product?.category ?? '',
+      imageCover: product?.imageUrl ?? product?.imageCover ?? '',
+      ratingsAverage: Number(product?.ratingsAverage ?? product?.rating ?? 0),
+      contact: product?.contact ?? '',
+      description: product?.description ?? '',
+    };
+  }
+
+  async function getProducts() {
+    const response = await axios.get(productsApiUrl);
+    const payload = response.data ?? {};
+    const products =
+      payload?.data?.content ??
+      payload?.data?.items ??
+      payload?.data ??
+      payload?.content ??
+      payload?.items ??
+      [];
+
+    return Array.isArray(products) ? products.map(normalizeProduct) : [];
+  }
+
+  async function searchProducts(keyword) {
+    const response = await axios.get(searchProductsApiUrl, {
+      params: {
+        keyword,
+      },
+    });
+
+    const payload = response.data ?? {};
+    const products =
+      payload?.data?.content ??
+      payload?.data?.items ??
+      payload?.data ??
+      payload?.content ??
+      payload?.items ??
+      [];
+
+    return Array.isArray(products) ? products.map(normalizeProduct) : [];
+  }
+
+  async function searchProductsByCategory(categoryId) {
+    const response = await axios.get(searchProductsApiUrl, {
+      params: {
+        categoryId,
+      },
+    });
+
+    const payload = response.data ?? {};
+    const products =
+      payload?.data?.content ??
+      payload?.data?.items ??
+      payload?.data ??
+      payload?.content ??
+      payload?.items ??
+      [];
+
+    return Array.isArray(products) ? products.map(normalizeProduct) : [];
+  }
+
+  // const { data } = useQuery({
+  //   queryKey: ['products'],
+  //   queryFn: () => {
+  //     return new Promise((resolve) => {
+  //       setTimeout(() => {
+  //         resolve(mockProducts);
+  //       }, 300);
+  //     });
+  //   },
+  // });
+
   const { data } = useQuery({
     queryKey: ['products'],
-    queryFn: () => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(mockProducts);
-        }, 300); // simulate loading
-      });
-    },
+    queryFn: getProducts,
   });
 
   return (
     <productsContext.Provider
-      value={{ data, searchRes, setSearchRes, renderStars }}
+      value={{
+        data,
+        searchRes,
+        setSearchRes,
+        renderStars,
+        searchProducts,
+        searchProductsByCategory,
+      }}
     >
-      {props.children}
+      {children}
     </productsContext.Provider>
   );
 }

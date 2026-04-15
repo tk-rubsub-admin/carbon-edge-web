@@ -11,7 +11,8 @@ export default function SellerLogin() {
   const { t } = useTranslation();
   const [err, setErr] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { setUserToken, setUserDisplayName } = useContext(authContext);
+  const { setUserToken, setUserDisplayName, setUserEmail, setUserRole } =
+    useContext(authContext);
   const navigate = useNavigate();
 
   const inputClassName =
@@ -26,8 +27,12 @@ export default function SellerLogin() {
     //   .then((res) => {
     setUserToken('seller-1234');
     setUserDisplayName(sellerDisplayName);
+    setUserEmail(data.email);
+    setUserRole('seller');
     localStorage.setItem('authToken', 'seller-1234');
     localStorage.setItem('userDisplayName', sellerDisplayName);
+    localStorage.setItem('userEmail', data.email);
+    localStorage.setItem('userRole', 'seller');
     setErr(null);
     setIsLoading(false);
     navigate('/');

@@ -45,12 +45,21 @@ export default function ProductItem({
     addProduct(product.id);
   }
 
+  function handleWishlistClick() {
+    if (isGuest) {
+      requireLogin(t('products.loginForCart'));
+      return;
+    }
+
+    handleWishlist(product.id);
+  }
   return (
     <div className="w-full lg:md:w-1/4 md:w-1/3 sm:w-1/2 p-3">
       <div className="relative bg-white mx-auto hover:scale-105 transition-all duration-400 hover:shadow-green-300 shadow-md rounded-lg max-w-sm dark:bg-gray-800 dark:border-gray-700">
         <div className="text-right absolute top-3 left-3">
           <button
-            // onClick={() => handleWishlist(product.id)}
+            type="button"
+            onClick={handleWishlistClick}
             className="p-2 rounded-full bg-green-500 bg-opacity-25 hover:bg-opacity-50"
           >
             {isWished ? (

@@ -5,10 +5,14 @@ export const authContext = createContext(null);
 export default function AuthContextProvider(props) {
   const [userToken, setUserToken] = useState(null);
   const [userDisplayName, setUserDisplayName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userRole, setUserRole] = useState('guest');
 
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken');
     const savedDisplayName = localStorage.getItem('userDisplayName');
+    const savedEmail = localStorage.getItem('userEmail');
+    const savedRole = localStorage.getItem('userRole');
 
     if (savedToken && savedToken !== 'xxxxx') {
       setUserToken(savedToken);
@@ -19,6 +23,14 @@ export default function AuthContextProvider(props) {
     if (savedDisplayName) {
       setUserDisplayName(savedDisplayName);
     }
+
+    if (savedEmail) {
+      setUserEmail(savedEmail);
+    }
+
+    if (savedRole) {
+      setUserRole(savedRole);
+    }
   }, []);
 
   return (
@@ -28,6 +40,10 @@ export default function AuthContextProvider(props) {
         setUserToken,
         userDisplayName,
         setUserDisplayName,
+        userEmail,
+        setUserEmail,
+        userRole,
+        setUserRole,
       }}
     >
       {props.children}
