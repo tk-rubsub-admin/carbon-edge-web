@@ -1,4 +1,5 @@
-import { useContext } from 'react';
+import axios from 'axios';
+import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { authContext } from '../../context/Auth/Auth';
 import { useTranslation } from 'react-i18next';
@@ -6,16 +7,88 @@ import toast from 'react-hot-toast';
 
 export default function Profile() {
   const { t } = useTranslation();
-  const { userDisplayName, userEmail, userRole } = useContext(authContext);
+  const {
+    userToken,
+    userDisplayName,
+    userEmail,
+    userRole,
+    setUserDisplayName,
+    setUserEmail,
+    setUserRole,
+  } = useContext(authContext);
+  const [profile, setProfile] = useState(null);
 
   const inputClassName =
     'w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-600 focus:ring-4 focus:ring-green-100';
 
-  const [firstName = '', ...restName] = (userDisplayName || '').split(' ');
-  const lastName = restName.join(' ');
-  const storedPhoneNumber = localStorage.getItem('userPhoneNumber') || '';
+  useEffect(() => {
+    async function fetchAuthenticatedUser() {
+      const storedToken = String(localStorage.getItem('authToken') || userToken || '')
+        .replace(/^Bearer\s+/i, '')
+        .trim();
+      const tokenType = String(localStorage.getItem('authTokenType') || 'Bearer')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!storedToken) {
+        return;
+      }
+
+      try {
+        const response = await axios.get('/v1/auth/authenticated-user', {
+          headers: {
+            token: storedToken,
+            Authorization: `${tokenType} ${storedToken}`,
+          },
+        });
+
+        const payload = response?.data?.data ?? {};
+        const customer = payload?.customer ?? {};
+        const fallbackDisplayName = [customer?.firstName, customer?.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+        const displayName =
+          customer?.displayName || fallbackDisplayName || userDisplayName;
+        const nextEmail = customer?.email ?? payload?.email ?? userEmail;
+        const nextRole = customer?.role ?? payload?.role ?? customer?.status ?? userRole;
+        const nextPhoneNumber = customer?.phoneNumber ?? '';
+
+        setProfile(payload);
+        setUserDisplayName(displayName);
+        setUserEmail(nextEmail);
+        setUserRole(nextRole);
+
+        localStorage.setItem('userDisplayName', displayName || '');
+        localStorage.setItem('userEmail', nextEmail || '');
+        localStorage.setItem('userRole', nextRole || '');
+        localStorage.setItem('userPhoneNumber', nextPhoneNumber || '');
+        localStorage.setItem('userId', payload?.userId || '');
+        localStorage.setItem('customerId', payload?.customerId || customer?.id || '');
+        localStorage.setItem('userStatus', payload?.status || customer?.status || '');
+        localStorage.setItem('wishlistId', String(payload?.wishlistId || ''));
+        localStorage.setItem('lastLoginAt', payload?.lastLoginAt || '');
+      } catch (error) {
+        console.error('Failed to fetch authenticated user', error);
+      }
+    }
+
+    fetchAuthenticatedUser();
+  }, [setUserDisplayName, setUserEmail, setUserRole, userDisplayName, userEmail, userRole, userToken]);
+
+  const customer = profile?.customer ?? {};
+  const resolvedDisplayName =
+    customer?.displayName || userDisplayName || t('profile.defaultName');
+  const [fallbackFirstName = '', ...restName] = (resolvedDisplayName || '').split(' ');
+  const firstName = customer?.firstName || fallbackFirstName;
+  const lastName = customer?.lastName || restName.join(' ');
+  const storedPhoneNumber =
+    customer?.phoneNumber || localStorage.getItem('userPhoneNumber') || '';
   const phoneNumber = storedPhoneNumber || '-';
   const isPhoneNumberValid = /^[0-9]{9,10}$/.test(storedPhoneNumber.trim());
+  const resolvedEmail = customer?.email || profile?.email || userEmail || '-';
+  const resolvedStatus = profile?.status || customer?.status || t('profile.pending');
+  const isEmailVerified = Boolean(customer?.isEmailVerified);
 
   const fields = [
     {
@@ -30,7 +103,7 @@ export default function Profile() {
     },
     {
       label: t('profile.email'),
-      value: userEmail || '-',
+      value: resolvedEmail,
       span: 'md:col-span-2',
     },
     {
@@ -62,7 +135,7 @@ export default function Profile() {
                 {t('profile.eyebrow')}
               </p>
               <h1 className="mt-4 text-3xl font-bold leading-tight md:text-4xl">
-                {userDisplayName || t('profile.defaultName')}
+                {resolvedDisplayName}
               </h1>
               <p className="mt-4 max-w-md text-sm leading-7 text-green-50/90">
                 {t('profile.subtitle')}
@@ -99,7 +172,7 @@ export default function Profile() {
                     {t('profile.status')}
                   </p>
                   <p className="mt-2 text-base font-semibold text-white">
-                    {t('profile.active')}
+                    {resolvedStatus}
                   </p>
                 </div>
                 <div className="rounded-[1.5rem] bg-white/10 px-4 py-4 ring-1 ring-white/10">
@@ -107,7 +180,7 @@ export default function Profile() {
                     {t('profile.emailVerified')}
                   </p>
                   <p className="mt-2 text-base font-semibold text-white">
-                    {t('profile.pending')}
+                    {isEmailVerified ? t('profile.active') : t('profile.pending')}
                   </p>
                 </div>
               </div>
