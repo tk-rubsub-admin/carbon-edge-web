@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { authContext } from '../../context/Auth/Auth';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../../config/runtime';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ export default function Profile() {
       }
 
       try {
-        const response = await axios.get('/v1/auth/authenticated-user', {
+        const response = await axios.get(`${API_BASE_URL}/auth/authenticated-user`, {
           headers: {
             token: storedToken,
             Authorization: `${tokenType} ${storedToken}`,
